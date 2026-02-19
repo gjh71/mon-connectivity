@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
+import azure
 import csv
 import os
 import subprocess
 import time
 from datetime import datetime, date
 from pathlib import Path
+from azure.storage.blob import BlobServiceClient
 
 # ----------------------------
 # Settings
 # ----------------------------
 INTERVAL_SECONDS = 30
-LOG_DIR = Path("/var/log/netmon")  # change if you prefer
+LOG_DIR = Path("./log")  # change if you prefer
 IFACES = ["eth0", "wlan0"]
 
 PUBLIC_IP_URL = "https://api.ipify.org"
+
+NOS_URL = os.environ["NOS_URL"]
+AZURE_CONTAINER = os.environ["AZURE_CONTAINER"]
+AZURE_STORAGE_CONNECTION_STRING = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+AZURE_ACCOUNT_DEFAULT=os.environ["AZURE_ACCOUNT_DEFAULT"]
 
 # Expected environment variable settings:
 # NOS_URL = ""
@@ -181,11 +188,6 @@ def azure_upload(local_file: Path):
     if not container:
         return False, "AZURE_CONTAINER not set"
 
-    try:
-        from azure.storage.blob import BlobServiceClient
-    except Exception as e:
-        return False, f"azure-storage-blob not available: {e}"
-
     conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "").strip()
     sas = os.getenv("AZURE_STORAGE_SAS_TOKEN", "").strip()
     account = os.getenv("AZURE_STORAGE_ACCOUNT", AZURE_ACCOUNT_DEFAULT).strip()
@@ -277,6 +279,7 @@ def main():
                 row[f"{iface}_{k}"] = v
 
         csv_path = log_path_for_today(log_dir)
+        print(f"{ts} - add results to {csv_path}")
         append_row(csv_path, row)
 
         # Upload the daily file if at least one interface is OK
