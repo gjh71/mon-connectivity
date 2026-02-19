@@ -1,6 +1,0 @@
-export NOS_URL = "https://google.com/"
-export AZURE_CONTAINER = "container"
-export AZURE_STORAGE_CONNECTION_STRING = "https://storagecontainer.blob.core.windows.net/container?sp=...%3D"
-# export AZURE_STORAGE_SAS_TOKEN = ""
-# export AZURE_STORAGE_ACCOUNT = ""
-# export AZURE_ACCOUNT_DEFAULT = ""

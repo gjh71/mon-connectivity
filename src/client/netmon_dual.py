@@ -4,9 +4,11 @@ import csv
 import os
 import subprocess
 import time
+import configparser
 from datetime import datetime, date
 from pathlib import Path
 from azure.storage.blob import BlobServiceClient
+from configparser import ConfigParser
 
 # ----------------------------
 # Settings
@@ -17,19 +19,10 @@ IFACES = ["eth0", "wlan0"]
 
 PUBLIC_IP_URL = "https://api.ipify.org"
 
-NOS_URL = os.environ["NOS_URL"]
-AZURE_CONTAINER = os.environ["AZURE_CONTAINER"]
-AZURE_STORAGE_CONNECTION_STRING = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-AZURE_ACCOUNT_DEFAULT=os.environ["AZURE_ACCOUNT_DEFAULT"]
-
-# Expected environment variable settings:
-# NOS_URL = ""
-# AZURE_CONTAINER                      (required)
-# AZURE_STORAGE_CONNECTION_STRING      (recommended) OR
-# AZURE_STORAGE_SAS_TOKEN              (account SAS, begins with "?sv=...")
-# AZURE_STORAGE_ACCOUNT                (optional if using SAS; defaults to )
-# AZURE_ACCOUNT_DEFAULT = ""
-
+inifileHandler = ConfigParser()
+URL2CHECK = inifileHandler.get('global', 'url2check')
+AZURE_CONTAINER = inifileHandler.get('Azure', 'Container')
+AZURE_STORAGE_CONNECTION_STRING = inifileHandler.get('Azure', 'ConnectionString')
 
 def run(cmd, timeout=8):
     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout)
@@ -231,7 +224,7 @@ def check_iface(iface: str):
     public_ip = ""
 
     if local_ok:
-        nos_ok, nos_ms, nos_code = curl_head_via_iface(iface, NOS_URL, timeout_s=6)
+        nos_ok, nos_ms, nos_code = curl_head_via_iface(iface, URL2CHECK, timeout_s=6)
         if nos_ok:
             public_ip = curl_get_via_iface(iface, PUBLIC_IP_URL, timeout_s=6)
 
